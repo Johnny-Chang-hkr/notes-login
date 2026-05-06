@@ -1,11 +1,10 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
 import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
 
 // 1. Imports from local files
-import config from "./config.json" with { type: "json" };
 import User from "./models/user.model.js";
 import Note from "./models/note.model.js";
 import authenticateToken from "./utilities.js";
@@ -25,6 +24,7 @@ app.use(
 );
 
 // 3. DATABASE CONNECTION
+dotenv.config();
 mongoose.connect(process.env.MONGODB_URI);
 
 
