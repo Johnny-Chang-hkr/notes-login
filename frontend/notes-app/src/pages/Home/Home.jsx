@@ -137,6 +137,124 @@ const updateIsPinned = async (noteData) => {
 
   return (
     <>
+  <Navbar
+    userInfo={userInfo}
+    onSearchNote={onSearchNote}
+    handleClearSearch={handleClearSearch}
+  />
+
+  {/* Main Content */}
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+    {allNotes.length > 0 ? (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
+        {allNotes.map((item) => (
+          <NoteCard
+            key={item._id}
+            title={item.title}
+            date={item.createdOn}
+            content={item.content}
+            tags={item.tags}
+            isPinned={item.isPinned}
+            onEdit={() => handleEdit(item)}
+            onDelete={() => deleteNote(item)}
+            onPinNote={() => updateIsPinned(item)}
+          />
+        ))}
+      </div>
+    ) : (
+      <div className="mt-10">
+        <EmptyCard />
+      </div>
+    )}
+  </div>
+
+  {/* Floating Add Button */}
+  <button
+    className="
+      w-14 h-14 sm:w-16 sm:h-16
+      flex items-center justify-center
+      rounded-2xl
+      bg-primary hover:bg-blue-600
+      fixed bottom-5 right-5 sm:bottom-8 sm:right-8
+      shadow-xl
+      transition-all duration-200
+      hover:scale-105
+      z-50
+    "
+    onClick={() =>
+      setOpenAddEditModal({
+        isShown: true,
+        type: "add",
+        data: null,
+      })
+    }
+  >
+    <MdAdd className="text-[28px] sm:text-[32px] text-white" />
+  </button>
+
+  {/* Modal */}
+  <Modal
+    isOpen={openAddEditModal.isShown}
+    onRequestClose={() =>
+      setOpenAddEditModal({
+        isShown: false,
+        type: "add",
+        data: null,
+      })
+    }
+    style={{
+      overlay: {
+        backgroundColor: "rgba(0,0,0,0.45)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px",
+        zIndex: 1000,
+      },
+    }}
+    className="
+      w-full
+      max-w-lg
+      max-h-[90vh]
+      overflow-y-auto
+      bg-white
+      rounded-2xl
+      p-4 sm:p-6
+      shadow-2xl
+      outline-none
+    "
+  >
+    <AddEditNotes
+      type={openAddEditModal.type}
+      noteData={openAddEditModal.data}
+      onClose={() =>
+        setOpenAddEditModal({
+          isShown: false,
+          type: "add",
+          data: null,
+        })
+      }
+      getAllNotes={getAllNotes}
+      showToastMessage={showToastMessage}
+    />
+  </Modal>
+
+  {/* Toast */}
+  <Toast
+    isShown={showToastMsg.isShown}
+    message={showToastMsg.message}
+    type={showToastMsg.type}
+    onClose={handleCloseToast}
+  />
+</>
+  );
+};
+
+export default Home;
+
+
+/* 
+<>
       <Navbar
         userInfo={userInfo}
         onSearchNote={onSearchNote}
@@ -200,15 +318,11 @@ const updateIsPinned = async (noteData) => {
         />
       </Modal>
 
-      {/* FIXED PROP NAME HERE */}
+      {/* FIXED PROP NAME HERE *//*}
       <Toast
         isShown={showToastMsg.isShown}
         message={showToastMsg.message}
         type={showToastMsg.type}
         onClose={handleCloseToast}
       />
-    </>
-  );
-};
-
-export default Home;
+    </> */
