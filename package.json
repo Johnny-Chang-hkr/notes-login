@@ -1,0 +1,22 @@
+{
+  "name": "notes-login",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm install --prefix backend && npm install --prefix frontend/notes-app && npm run build --prefix frontend/notes-app",
+    "start": "npm run start --prefix backend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Johnny-Chang-hkr/notes-login.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Johnny-Chang-hkr/notes-login/issues"
+  },
+  "homepage": "https://github.com/Johnny-Chang-hkr/notes-login#readme"
+}
