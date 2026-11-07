@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { MdLogout } from "react-icons/md";
+import { MdDarkMode, MdLightMode, MdLogout } from "react-icons/md";
 import ProfileInfo from "../Cards/ProfileInfo";
 import SearchBar from "../../SearchBar/SearchBar";
+import { useTheme } from "../Theme/ThemeContext";
 
 const Navbar = ({
   userInfo,
@@ -11,6 +12,7 @@ const Navbar = ({
   handleClearSearch,
 }) => {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   const onLogout = () => {
     localStorage.removeItem("token");
@@ -38,6 +40,14 @@ const Navbar = ({
       </div>
       <div className="topbar-user">
         <ProfileInfo userInfo={userInfo} />
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+          title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+        >
+          {theme === "dark" ? <MdLightMode /> : <MdDarkMode />}
+        </button>
         <button className="logout-button" onClick={onLogout} aria-label="Log out" title="Log out">
           <MdLogout />
         </button>

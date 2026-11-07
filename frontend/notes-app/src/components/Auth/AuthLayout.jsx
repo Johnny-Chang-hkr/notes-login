@@ -3,11 +3,17 @@ import {
   MdArrowOutward,
   MdAutoAwesome,
   MdCheck,
+  MdDarkMode,
+  MdLightMode,
   MdOutlineLightbulb,
   MdOutlinePushPin,
 } from "react-icons/md";
+import { useTheme } from "../Theme/ThemeContext";
 
-const AuthLayout = ({ variant, children }) => (
+const AuthLayout = ({ variant, children }) => {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
   <main className={`auth-layout auth-layout--${variant}`}>
     <aside className="auth-story">
       <div className="auth-story-glow auth-story-glow--one" />
@@ -17,6 +23,15 @@ const AuthLayout = ({ variant, children }) => (
         <span className="brand-mark">n.</span>
         <span className="brand-name">notely<span>.</span></span>
       </Link>
+      <button
+        className="auth-theme-toggle"
+        onClick={toggleTheme}
+        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+        title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+      >
+        {theme === "dark" ? <MdLightMode /> : <MdDarkMode />}
+        <span>{theme === "dark" ? "Light" : "Dark"}</span>
+      </button>
 
       <div className="auth-story-content">
         <div className="auth-story-kicker">
@@ -67,6 +82,7 @@ const AuthLayout = ({ variant, children }) => (
       </p>
     </section>
   </main>
-);
+  );
+};
 
 export default AuthLayout;

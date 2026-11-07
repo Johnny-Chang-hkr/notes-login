@@ -81,6 +81,7 @@ In production, Express serves the built Vite app and API from the same service. 
 
 - Create, edit, pin, and delete notes
 - Open notes in a focused reading view with full content and tags
+- Switch between light and dark themes; your choice is saved in this browser
 - Add tags and filter notes by tag
 - Search note titles, content, and tags as you type
 - Choose a saved note color
