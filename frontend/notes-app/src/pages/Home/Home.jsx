@@ -5,6 +5,7 @@ import {
   MdCheck,
   MdGridView,
   MdLabelOutline,
+  MdLocalFlorist,
   MdOutlinePushPin,
   MdSort,
   MdViewAgenda,
@@ -270,10 +271,10 @@ const Home = () => {
           </div>
 
           <div className="sidebar-tip">
-            <div className="tip-icon"><MdAutoAwesome /></div>
-            <p className="tip-title">A little note goes a long way.</p>
-            <p className="tip-copy">Capture a thought before it slips away.</p>
-            <button onClick={openNewNote}>Write one now <span>↗</span></button>
+            <div className="tip-icon"><MdLocalFlorist /></div>
+            <p className="tip-title">Let your ideas grow.</p>
+            <p className="tip-copy">Plant a little thought and come back to it anytime.</p>
+            <button onClick={openNewNote}>Plant a thought <span>↗</span></button>
           </div>
           <p className="sidebar-footer">A calmer place for your thoughts.</p>
         </aside>
@@ -281,9 +282,9 @@ const Home = () => {
         <main className="notes-main">
           <div className="page-intro">
             <div>
-              <p className="eyebrow">YOUR PERSONAL SPACE</p>
-              <h1>Good ideas live here<span>.</span></h1>
-              <p className="page-subtitle">A little space to think, plan, and remember.</p>
+              <p className="eyebrow"><MdLocalFlorist /> YOUR LITTLE MEADOW</p>
+              <h1>Let your thoughts <span>bloom.</span></h1>
+              <p className="page-subtitle">A little space for ideas to take root and grow.</p>
             </div>
             <div className="notes-total">
               <span>{allNotes.length.toString().padStart(2, "0")}</span>

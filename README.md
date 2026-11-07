@@ -1,6 +1,6 @@
 # Notely
 
-Notely is a full-stack notes app for capturing and organizing ideas. It includes account registration and login, searchable notes, tags, pinned notes, note colors, sorting, and responsive grid and list views.
+Notely is a full-stack notes app for capturing and organizing ideas in a flower-meadow-inspired workspace. It includes account registration and login, searchable notes, tags, pinned notes, note colors, sorting, and responsive grid and list views.
 
 ## Stack
 
@@ -81,7 +81,7 @@ In production, Express serves the built Vite app and API from the same service. 
 
 - Create, edit, pin, and delete notes
 - Open notes in a focused reading view with full content and tags
-- Switch between light and dark themes; your choice is saved in this browser
+- Switch between light and dark meadow themes; your choice is saved in this browser
 - Add tags and filter notes by tag
 - Search note titles, content, and tags as you type
 - Choose a saved note color
