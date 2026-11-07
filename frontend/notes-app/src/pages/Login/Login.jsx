@@ -1,133 +1,124 @@
 import { useState } from "react";
-import PasswordInput from "../../components/Input/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
+import { MdArrowForward, MdMailOutline, MdWarningAmber } from "react-icons/md";
+import PasswordInput from "../../components/Input/PasswordInput";
+import AuthLayout from "../../components/Auth/AuthLayout";
 import { validateEmail } from "../../utils/helper";
 import axiosInstance from "../../utils/axiosInstance";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // New loading state
-
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    const trimmedEmail = email.trim();
 
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
+    if (!validateEmail(trimmedEmail)) {
+      setError("Enter a valid email address and try again.");
       return;
     }
 
     if (!password) {
-      setError("Please enter the password");
+      setError("Enter your password to continue.");
       return;
     }
 
     setError("");
-    setIsLoading(true); // Start loading
-
+    setIsLoading(true);
     try {
       const response = await axiosInstance.post("/users/login", {
-        email: email,
-        password: password,
+        email: trimmedEmail,
+        password,
       });
 
-      // Handle successful login
-      if (response.data && response.data.accessToken) {
+      if (response.data?.accessToken) {
         localStorage.setItem("token", response.data.accessToken);
         navigate("/dashboard");
-      }
-    } catch (error) {
-      // Handle login error
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        setError(error.response.data.message);
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        setError(response.data?.message || "We couldn't sign you in. Please try again.");
       }
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          "Something went wrong. Check your connection and try again.",
+      );
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="auth-page min-h-screen">
-      <div className="auth-brand">
-        <span className="brand-mark">n.</span>
-        <span className="brand-name">notely<span>.</span></span>
+    <AuthLayout variant="login">
+      <div className="auth-form-heading">
+        <span className="auth-form-eyebrow">YOUR SPACE IS WAITING</span>
+        <h2>Welcome <span>back.</span></h2>
+        <p>Pick up right where your thoughts left off.</p>
       </div>
 
-      <div className="auth-content flex items-center justify-center px-4">
-        <div className="auth-card w-full max-w-md border rounded-2xl bg-white px-8 py-12 shadow-sm">
-          <form onSubmit={handleLogin}>
-            <h4 className="text-3xl font-semibold mb-2 text-slate-800">
-              Welcome Back
-            </h4>
-            <p className="text-sm text-slate-500 mb-8">
-              Please enter your details to log in.
-            </p>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-medium text-slate-600 uppercase tracking-wider ml-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  placeholder="name@example.com"
-                  className="input-box mt-1 w-full"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-slate-600 uppercase tracking-wider ml-1">
-                  Password
-                </label>
-                <PasswordInput
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <p className="text-red-500 text-sm mt-4 bg-red-50 p-2 rounded border border-red-100 text-center">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              className={`btn-primary mt-6 w-full py-3 rounded-lg font-semibold transition-all shadow-md active:scale-[0.98] ${
-                isLoading
-                  ? "opacity-70 cursor-not-allowed"
-                  : "hover:bg-blue-700"
-              }`}
-              disabled={isLoading}
-            >
-              {isLoading ? "Logging in..." : "Login"}
-            </button>
-
-            <p className="text-sm text-center mt-6 text-slate-600">
-              New here?{" "}
-              <Link
-                to="/signup"
-                className="font-bold text-blue-600 hover:underline"
-              >
-                Create an Account
-              </Link>
-            </p>
-          </form>
+      <form className="auth-form" onSubmit={handleLogin} noValidate>
+        <div className="auth-field">
+          <label htmlFor="login-email">Email address</label>
+          <div className="auth-input-wrap">
+            <MdMailOutline className="auth-field-icon" aria-hidden="true" />
+            <input
+              id="login-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (error) setError("");
+              }}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "login-error" : undefined}
+              required
+            />
+          </div>
         </div>
-      </div>
-    </div>
+
+        <div className="auth-field">
+          <div className="auth-label-row">
+            <label htmlFor="login-password">Password</label>
+          </div>
+          <PasswordInput
+            id="login-password"
+            name="password"
+            autoComplete="current-password"
+            placeholder="Your password"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              if (error) setError("");
+            }}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "login-error" : undefined}
+            required
+          />
+        </div>
+
+        {error && (
+          <p className="auth-error" id="login-error" role="alert">
+            <MdWarningAmber aria-hidden="true" />
+            <span>{error}</span>
+          </p>
+        )}
+
+        <button className="auth-submit" type="submit" disabled={isLoading}>
+          <span>{isLoading ? "Finding your space..." : "Sign in"}</span>
+          {isLoading ? <span className="auth-spinner" /> : <MdArrowForward />}
+        </button>
+      </form>
+
+      <p className="auth-switch">
+        New to Notely? <Link to="/signup">Create your free account <MdArrowForward /></Link>
+      </p>
+    </AuthLayout>
   );
 };
 

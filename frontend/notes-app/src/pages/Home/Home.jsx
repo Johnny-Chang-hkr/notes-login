@@ -179,6 +179,20 @@ const Home = () => {
       : activeFilter === "tag"
         ? `# ${activeTag}`
         : "All notes";
+  const emptyTitle = searchQuery
+    ? "No notes found"
+    : activeFilter === "pinned"
+      ? "Nothing pinned just yet"
+      : activeFilter === "tag"
+        ? "No notes with this tag"
+        : "Your page is still blank";
+  const emptyDescription = searchQuery
+    ? "Try another search or clear the search field."
+    : activeFilter === "pinned"
+      ? "Pin a note you want to keep close and it will show up here."
+      : activeFilter === "tag"
+        ? "Try another tag or browse all of your notes."
+        : "Start with a thought, a reminder, or something you don't want to forget.";
 
   return (
     <div className="app-shell">
@@ -336,14 +350,12 @@ const Home = () => {
             ) : (
               <div className="notes-message empty-message">
                 <div className="empty-art"><MdAutoAwesome /></div>
-                <h3>{searchQuery ? "No notes found" : "Your page is still blank"}</h3>
-                <p>
-                  {searchQuery
-                    ? "Try another search or clear the search field."
-                    : "Start with a thought, a reminder, or something you don't want to forget."}
-                </p>
+                <h3>{emptyTitle}</h3>
+                <p>{emptyDescription}</p>
                 {searchQuery ? (
                   <button onClick={() => setSearchQuery("")}>Clear search</button>
+                ) : activeFilter !== "all" ? (
+                  <button onClick={() => chooseFilter("all")}>Browse all notes</button>
                 ) : (
                   <button onClick={openNewNote}><MdAdd /> Create your first note</button>
                 )}

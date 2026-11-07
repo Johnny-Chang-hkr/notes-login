@@ -1,6 +1,13 @@
-import { useState } from "react";
-import PasswordInput from "../../components/Input/PasswordInput";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  MdArrowForward,
+  MdMailOutline,
+  MdPersonOutline,
+  MdWarningAmber,
+} from "react-icons/md";
+import PasswordInput from "../../components/Input/PasswordInput";
+import AuthLayout from "../../components/Auth/AuthLayout";
 import { validateEmail } from "../../utils/helper";
 import axiosInstance from "../../utils/axiosInstance";
 
@@ -8,136 +15,177 @@ const SignUp = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
   const navigate = useNavigate();
 
-  const handleSignUp = async (e) => {
-    e.preventDefault();
+  const passwordStrength = useMemo(() => {
+    if (!password) return { score: 0, label: "Add a password" };
 
-    if (!name) {
-      setError("Please enter your name");
+    const score = [
+      password.length >= 8,
+      /[a-z]/.test(password) && /[A-Z]/.test(password),
+      /\d/.test(password),
+      /[^A-Za-z0-9]/.test(password),
+    ].filter(Boolean).length;
+
+    return {
+      score,
+      label: score <= 1 ? "A little more variety helps" : score <= 2 ? "Getting stronger" : score === 3 ? "Looking good" : "Strong password",
+    };
+  }, [password]);
+
+  const handleSignUp = async (event) => {
+    event.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedName) {
+      setError("What should we call you?");
       return;
     }
 
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
+    if (!validateEmail(trimmedEmail)) {
+      setError("Enter a valid email address and try again.");
       return;
     }
 
     if (!password) {
-      setError("Please enter the password");
+      setError("Choose a password to secure your space.");
       return;
     }
 
     setError("");
     setIsLoading(true);
-
     try {
       const response = await axiosInstance.post("/users/create-account", {
-        fullName: name,
-        email: email,
-        password: password,
+        fullName: trimmedName,
+        email: trimmedEmail,
+        password,
       });
 
-      if (response.data && response.data.error) {
-        setError(response.data.message);
+      if (response.data?.error) {
+        setError(response.data.message || "We couldn't create your account. Please try again.");
         return;
       }
 
-      if (response.data && response.data.accessToken) {
+      if (response.data?.accessToken) {
         localStorage.setItem("token", response.data.accessToken);
         navigate("/dashboard");
-      }
-    } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        setError(error.response.data.message);
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        setError(response.data?.message || "We couldn't create your account. Please try again.");
       }
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          "Something went wrong. Check your connection and try again.",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="auth-page min-h-screen">
-      <div className="auth-brand">
-        <span className="brand-mark">n.</span>
-        <span className="brand-name">notely<span>.</span></span>
+    <AuthLayout variant="signup">
+      <div className="auth-form-heading">
+        <span className="auth-form-eyebrow">A FRESH PAGE, JUST FOR YOU</span>
+        <h2>Your ideas need <span>a home.</span></h2>
+        <p>Make a little room for everything on your mind.</p>
       </div>
 
-      <div className="auth-content flex items-center justify-center px-4">
-        <div className="auth-card w-full max-w-md border rounded-2xl bg-white px-8 py-10 shadow-sm">
-          <form onSubmit={handleSignUp}>
-            <h4 className="text-3xl font-semibold mb-2 text-slate-800">Create Account</h4>
-            <p className="text-sm text-slate-500 mb-8">Join us to start organizing your thoughts.</p>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-medium text-slate-600 uppercase tracking-wider ml-1">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="John Doe"
-                  className="input-box mt-1 w-full"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-slate-600 uppercase tracking-wider ml-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  placeholder="john@example.com"
-                  className="input-box mt-1 w-full"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-slate-600 uppercase tracking-wider ml-1">
-                  Password
-                </label>
-                <PasswordInput
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <p className="text-red-500 text-sm mt-4 bg-red-50 p-2 rounded border border-red-100 text-center">
-                {error}
-              </p>
-            )}
-
-            <button 
-              type="submit" 
-              className={`btn-primary mt-6 w-full py-3 rounded-lg font-semibold transition-all shadow-md active:scale-[0.98] ${
-                isLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-700"
-              }`}
-              disabled={isLoading}
-            >
-              {isLoading ? "Creating Account..." : "Create Account"}
-            </button>
-
-            <p className="text-sm text-center mt-6 text-slate-600">
-              Already have an account?{" "}
-              <Link to="/login" className="font-bold text-blue-600 hover:underline">
-                Login
-              </Link>
-            </p>
-          </form>
+      <form className="auth-form auth-form--signup" onSubmit={handleSignUp} noValidate>
+        <div className="auth-field">
+          <label htmlFor="signup-name">Your name</label>
+          <div className="auth-input-wrap">
+            <MdPersonOutline className="auth-field-icon" aria-hidden="true" />
+            <input
+              id="signup-name"
+              name="name"
+              type="text"
+              autoComplete="name"
+              placeholder="What do your friends call you?"
+              value={name}
+              onChange={(event) => {
+                setName(event.target.value);
+                if (error) setError("");
+              }}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "signup-error" : undefined}
+              required
+            />
+          </div>
         </div>
-      </div>
-    </div>
+
+        <div className="auth-field">
+          <label htmlFor="signup-email">Email address</label>
+          <div className="auth-input-wrap">
+            <MdMailOutline className="auth-field-icon" aria-hidden="true" />
+            <input
+              id="signup-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (error) setError("");
+              }}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "signup-error" : undefined}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="auth-field">
+          <label htmlFor="signup-password">Create a password</label>
+          <PasswordInput
+            id="signup-password"
+            name="new-password"
+            autoComplete="new-password"
+            placeholder="Make it yours"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              if (error) setError("");
+            }}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "signup-error" : "password-strength"}
+            required
+          />
+          <div className="password-strength" id="password-strength" aria-live="polite">
+            <div className="password-strength-meter" aria-hidden="true">
+              {[1, 2, 3, 4].map((step) => (
+                <span
+                  key={step}
+                  className={passwordStrength.score >= step ? `strength-${passwordStrength.score}` : ""}
+                />
+              ))}
+            </div>
+            <span>{passwordStrength.label}</span>
+          </div>
+          <p className="password-hint">A longer password with a mix of characters is easier to keep safe.</p>
+        </div>
+
+        {error && (
+          <p className="auth-error" id="signup-error" role="alert">
+            <MdWarningAmber aria-hidden="true" />
+            <span>{error}</span>
+          </p>
+        )}
+
+        <button className="auth-submit" type="submit" disabled={isLoading}>
+          <span>{isLoading ? "Making your space..." : "Create my account"}</span>
+          {isLoading ? <span className="auth-spinner" /> : <MdArrowForward />}
+        </button>
+        <p className="auth-consent">By joining, you get a little more room for your ideas.</p>
+      </form>
+
+      <p className="auth-switch">
+        Already have a space? <Link to="/login">Sign in instead <MdArrowForward /></Link>
+      </p>
+    </AuthLayout>
   );
 };
 

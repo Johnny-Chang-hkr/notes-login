@@ -1,41 +1,44 @@
-
 import { useState } from "react";
-import {FaRegEye, FaRegEyeSlash} from "react-icons/fa6"
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 
-const PasswordInput = ({value, onChange, placeholder }) => {
-
-
-    const [isShowPassword, setIsShowPassword] = useState(false);
-
-    const toggleShowPassword = () => {
-        setIsShowPassword(!isShowPassword)
-    };
+const PasswordInput = ({
+  id,
+  name,
+  value,
+  onChange,
+  placeholder = "Password",
+  autoComplete,
+  required = false,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedby,
+}) => {
+  const [isVisible, setIsVisible] = useState(false);
 
   return (
-    <div className='flex items-center bg-transparent border-[1.5px] px-5 rounded mb-3'>
-      <input 
-      value={value}
-      onChange={onChange}
-      type={isShowPassword ? "text" : "password"}
-      placeholder={placeholder || 'Password'}
-      className='w-full text-sm bg-transparent py-3 mr-3 rounded outline-none'
-
+    <div className={`password-input-wrap ${ariaInvalid ? "has-error" : ""}`}>
+      <input
+        id={id}
+        name={name}
+        type={isVisible ? "text" : "password"}
+        autoComplete={autoComplete}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        aria-invalid={ariaInvalid}
+        aria-describedby={ariaDescribedby}
+        required={required}
       />
-
-      {isShowPassword ? (
-        <FaRegEye 
-        size={22}
-        className="text-prrimary cursor-pointer"
-        onClick={() => toggleShowPassword()}
-      />) : (
-        <FaRegEyeSlash
-                size={22}
-                className='text-slate-400 cursor-pointer'
-                onClick={() => toggleShowPassword()}
-            />
-            )}
+      <button
+        className="password-visibility"
+        type="button"
+        onClick={() => setIsVisible((visible) => !visible)}
+        aria-label={isVisible ? "Hide password" : "Show password"}
+        aria-pressed={isVisible}
+      >
+        {isVisible ? <FaRegEyeSlash aria-hidden="true" /> : <FaRegEye aria-hidden="true" />}
+      </button>
     </div>
-  )
-}
+  );
+};
 
-export default PasswordInput
+export default PasswordInput;

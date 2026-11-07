@@ -6,7 +6,7 @@ const ProfileInfo = ({ userInfo }) => (
     <div className="profile-avatar">{getInitials(userInfo?.fullName) || "N"}</div>
     <div className="profile-copy">
       <span className="profile-name">{userInfo?.fullName || "Your space"}</span>
-      <span className="profile-status"><span /> Your notes are private</span>
+      <span className="profile-status"><span /> Your personal workspace</span>
     </div>
   </div>
 );
