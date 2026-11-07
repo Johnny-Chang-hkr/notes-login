@@ -2835,8 +2835,45 @@ html[data-theme="dark"] .reader-pinned-label {
 }
 
 html[data-theme="dark"] .note-reader-paper {
-  filter: saturate(0.8) brightness(0.87);
+  color: #e8e8f0;
   border-color: rgba(255, 255, 255, 0.1);
+  background: #282a35;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme="dark"] .reader-meta,
+html[data-theme="dark"] .reader-meta .reader-date {
+  color: #b7b8c5;
+}
+
+html[data-theme="dark"] .reader-meta-dot {
+  background: #777989;
+}
+
+html[data-theme="dark"] .note-reader-paper h1 {
+  color: #f0eff7;
+}
+
+html[data-theme="dark"] .reader-divider {
+  background: #9c96e0;
+}
+
+html[data-theme="dark"] .reader-content {
+  color: #d3d3de;
+}
+
+html[data-theme="dark"] .reader-tags {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+html[data-theme="dark"] .reader-tags-label {
+  color: #a7a7b6;
+}
+
+html[data-theme="dark"] .reader-tags .note-tags span {
+  border-color: rgba(194, 188, 240, 0.12);
+  color: #d4d0f0;
+  background: #393a49;
 }
 
 html[data-theme="dark"] .reader-footer {
