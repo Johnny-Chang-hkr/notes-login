@@ -13,6 +13,7 @@ import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import NoteCard from "../../components/Cards/NoteCard";
+import NoteReader from "../../components/Cards/NoteReader";
 import Toast from "../../components/ToastMessage/Toast";
 import AddEditNotes from "./AddEditNotes";
 import axiosInstance from "../../utils/axiosInstance";
@@ -28,6 +29,7 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const searchInputRef = useRef(null);
+  const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [openAddEditModal, setOpenAddEditModal] = useState({
     isShown: false,
     type: "add",
@@ -84,12 +86,14 @@ const Home = () => {
         event.preventDefault();
         searchInputRef.current?.focus();
       }
-      if (event.key === "Escape" && searchQuery) setSearchQuery("");
+      if (event.key === "Escape" && !selectedNoteId && searchQuery) {
+        setSearchQuery("");
+      }
     };
 
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, [searchQuery]);
+  }, [searchQuery, selectedNoteId]);
 
   const tags = useMemo(
     () => [...new Set(allNotes.flatMap((note) => note.tags || []))].sort(),
@@ -125,6 +129,13 @@ const Home = () => {
 
   const handleEdit = (note) =>
     setOpenAddEditModal({ isShown: true, type: "edit", data: note });
+
+  const selectedNote = allNotes.find((note) => note._id === selectedNoteId) || null;
+  const closeNoteReader = () => setSelectedNoteId(null);
+  const editSelectedNote = (note) => {
+    closeNoteReader();
+    handleEdit(note);
+  };
 
   const deleteNote = async (note) => {
     try {
@@ -341,6 +352,7 @@ const Home = () => {
                   <NoteCard
                     key={note._id}
                     note={note}
+                    onOpen={() => setSelectedNoteId(note._id)}
                     onEdit={() => handleEdit(note)}
                     onDelete={() => deleteNote(note)}
                     onPinNote={() => togglePinned(note)}
@@ -369,6 +381,20 @@ const Home = () => {
       <button className="mobile-create-button" aria-label="Create a note" onClick={openNewNote}>
         <MdAdd />
       </button>
+
+      <Modal
+        isOpen={Boolean(selectedNote)}
+        onRequestClose={closeNoteReader}
+        className="read-modal"
+        overlayClassName="read-modal-overlay"
+        contentLabel={selectedNote?.title || "Read note"}
+      >
+        <NoteReader
+          note={selectedNote}
+          onClose={closeNoteReader}
+          onEdit={editSelectedNote}
+        />
+      </Modal>
 
       <Modal
         isOpen={openAddEditModal.isShown}

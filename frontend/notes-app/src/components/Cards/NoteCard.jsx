@@ -5,7 +5,7 @@ import {
   MdOutlinePushPin,
 } from "react-icons/md";
 
-const NoteCard = ({ note, onEdit, onDelete, onPinNote }) => {
+const NoteCard = ({ note, onOpen, onEdit, onDelete, onPinNote }) => {
   const { title, createdOn, content, tags = [], isPinned, color } = note;
 
   return (
@@ -13,6 +13,12 @@ const NoteCard = ({ note, onEdit, onDelete, onPinNote }) => {
       className="note-card"
       style={{ "--note-color": color || "#ffffff" }}
     >
+      <button
+        type="button"
+        className="note-card-open-overlay"
+        onClick={onOpen}
+        aria-label={`Read note: ${title || "Untitled note"}`}
+      />
       <div className="note-card-topline">
         <span className="note-date">{moment(createdOn).format("MMM D, YYYY")}</span>
         <button
@@ -26,6 +32,7 @@ const NoteCard = ({ note, onEdit, onDelete, onPinNote }) => {
       </div>
       <h3>{title || "Untitled note"}</h3>
       <p className="note-content">{content}</p>
+      <span className="note-read-hint">Open note <span aria-hidden="true">↗</span></span>
       <div className="note-card-bottom">
         <div className="note-tags">
           {tags.slice(0, 3).map((tag) => (

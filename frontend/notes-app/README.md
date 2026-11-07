@@ -1,6 +1,6 @@
 # Notely
 
-Notely is a responsive notes workspace built with React, Vite, Express, and MongoDB. It supports account sign-in, note creation and editing, tags, pinning, live search, sorting, grid/list layouts, and saved note colors.
+Notely is a responsive notes workspace built with React, Vite, Express, and MongoDB. It supports account sign-in, note creation and editing, tags, pinning, live search, sorting, grid/list layouts, saved note colors, and a focused reading view for opening notes.
 
 ## Run locally
 
