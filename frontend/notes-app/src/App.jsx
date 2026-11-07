@@ -3,6 +3,7 @@ import Login from './pages/Login/Login'
 import SignUp from './pages/SignUp/SignUp'
 // Added Navigate to the import list
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import './App.css'
 
 const routes = (
   <Router>

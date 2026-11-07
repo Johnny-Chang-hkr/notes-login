@@ -1,16 +1,31 @@
-# React + Vite
+# Notely
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Notely is a responsive notes workspace built with React, Vite, Express, and MongoDB. It supports account sign-in, note creation and editing, tags, pinning, live search, sorting, grid/list layouts, and saved note colors.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Configure `backend/.env` with `MONGODB_URI` and `ACCESS_TOKEN_SECRET`.
+2. Install and start the API:
 
-## React Compiler
+   ```sh
+   npm install --prefix backend
+   npm run dev --prefix backend
+   ```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+3. In another terminal, install and start the frontend:
 
-## Expanding the ESLint configuration
+   ```sh
+   npm install --prefix frontend/notes-app
+   npm run dev --prefix frontend/notes-app
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The Vite development server runs at `http://localhost:5173` and the API defaults to `http://localhost:8000`.
+
+## Frontend checks
+
+Run these commands from `frontend/notes-app`:
+
+```sh
+npm run lint
+npm run build
+```

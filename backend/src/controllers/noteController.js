@@ -2,7 +2,7 @@ import Note from "../models/note.model.js";
 
 // Add Note -----------------------------------
 export const addNote = async (req, res) => {
-  const { title, content, tags } = req.body;
+  const { title, content, tags, color } = req.body;
   const { user } = req.user;
 
   if (!title) {
@@ -24,6 +24,7 @@ export const addNote = async (req, res) => {
       title,
       content,
       tags: tags || [],
+      color: color || "#ffffff",
       userId: user._id,
     });
 
@@ -45,10 +46,10 @@ export const addNote = async (req, res) => {
 // Edit A Note-----------------------------------------------
 export const editNote = async (req, res) => {
   const noteId = req.params.noteId;
-  const { title, content, tags, isPinned } = req.body;
+  const { title, content, tags, isPinned, color } = req.body;
   const { user } = req.user;
 
-  if (!title && !content && !tags) {
+  if (!title && !content && !tags && !color && typeof isPinned === "undefined") {
     return res
       .status(400)
       .json({ error: true, message: "No changes provided" });
@@ -64,6 +65,7 @@ export const editNote = async (req, res) => {
     if (title) note.title = title;
     if (content) note.content = content;
     if (tags) note.tags = tags;
+    if (color) note.color = color;
     if (typeof isPinned !== "undefined") {
       note.isPinned = isPinned;
     }

@@ -1,328 +1,387 @@
-import { useEffect, useState } from "react";
-import Navbar from "../../components/Navbar/Navbar";
-import NoteCard from "../../components/Cards/NoteCard";
-import { MdAdd } from "react-icons/md";
-import AddEditNotes from "./AddEditNotes";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  MdAdd,
+  MdAutoAwesome,
+  MdCheck,
+  MdGridView,
+  MdLabelOutline,
+  MdOutlinePushPin,
+  MdSort,
+  MdViewAgenda,
+} from "react-icons/md";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../utils/axiosInstance";
+import Navbar from "../../components/Navbar/Navbar";
+import NoteCard from "../../components/Cards/NoteCard";
 import Toast from "../../components/ToastMessage/Toast";
-import EmptyCard from "../../components/Cards/EmptyCard";
+import AddEditNotes from "./AddEditNotes";
+import axiosInstance from "../../utils/axiosInstance";
 
 const Home = () => {
   const [allNotes, setAllNotes] = useState([]);
   const [userInfo, setUserInfo] = useState(null);
-
-  const [isSearch, setIsSearch] = useState(false);
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeTag, setActiveTag] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const [viewMode, setViewMode] = useState("grid");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const searchInputRef = useRef(null);
   const [openAddEditModal, setOpenAddEditModal] = useState({
     isShown: false,
     type: "add",
     data: null,
   });
-
-  const [showToastMsg, setShowToastMsg] = useState({
-    isShown: false, // Changed from isShow to isShown to match the prop
+  const [toast, setToast] = useState({
+    isShown: false,
     message: "",
     type: "add",
   });
 
   const navigate = useNavigate();
 
-  // Helper to trigger toast
-  const showToastMessage = (message, type) => {
-    setShowToastMsg({
-      isShown: true,
-      message,
-      type,
-    });
+  const showToastMessage = (message, type = "add") => {
+    setToast({ isShown: true, message, type });
   };
 
-  const handleCloseToast = () => {
-    setShowToastMsg({
-      isShown: false,
-      message: "",
-    });
+  const closeEditor = () => {
+    setOpenAddEditModal({ isShown: false, type: "add", data: null });
   };
 
-  const handleEdit = (noteDetails) => {
-    setOpenAddEditModal({ isShown: true, data: noteDetails, type: "edit" });
-  };
-
-  // Get User Info
-  const getUserInfo = async () => {
-    try {
-      const response = await axiosInstance.get("/users/get-user");
-      if (response.data && response.data.user) {
-        setUserInfo(response.data.user);
-      }
-    } catch (error) {
-      localStorage.clear();
-      navigate("/login");
-    }
-  };
-
-  // Get All Notes
-  const getAllNotes = async () => {
+  const getAllNotes = useCallback(async () => {
+    setLoadError("");
     try {
       const response = await axiosInstance.get("/notes/get-all-notes");
-      if (response.data && response.data.notes) {
-        setAllNotes(response.data.notes);
-      }
+      setAllNotes(response.data?.notes || []);
     } catch (error) {
-      console.log("An unexpected error occurred.", error);
+      setLoadError(
+        error.response?.data?.message || "We couldn't load your notes. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, []);
 
-  // Delete Note logic
-  const deleteNote = async (data) => {
-    const noteId = data._id;
+  const getUserInfo = useCallback(async () => {
     try {
-      const response = await axiosInstance.delete("/notes/delete-note/" + noteId);
-      if (response.data && !response.data.error) {
-        showToastMessage("Note Deleted Successfully", "delete");
-        getAllNotes();
-      }
-    } catch (error) {
-      console.log("An unexpected error occurred.");
+      const response = await axiosInstance.get("/users/get-user");
+      if (response.data?.user) setUserInfo(response.data.user);
+    } catch {
+      localStorage.removeItem("token");
+      navigate("/login");
     }
-  };
-
-  // Search for a Note
-  const onSearchNote = async (query) => {
-    try {
-      const response = await axiosInstance.get("/notes/search-notes", {
-        params: { query },
-      });
-
-      if (response.data && response.data.notes) {
-        setIsSearch(true);
-        setAllNotes(response.data.notes);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // Handle Clear Search
-  const handleClearSearch = () => {
-    setIsSearch(false);
-    getAllNotes();
-  };
-
-  // update IsPinned
-const updateIsPinned = async (noteData) => {
-  const noteId = noteData._id;
-
-  try {
-    const response = await axiosInstance.put("/notes/update-note-pinned/" + noteId, {
-      // FIX: Use noteData.isPinned instead of noteId.isPinned
-      isPinned: !noteData.isPinned,
-    });
-
-    if (response.data && response.data.note) {
-      // Suggestion: Change message to "Note Pinned Successfully" for better UX
-      showToastMessage("Note Updated Successfully", "add");
-      getAllNotes();
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
+  }, [navigate]);
 
   useEffect(() => {
     getAllNotes();
     getUserInfo();
-  }, []);
+  }, [getAllNotes, getUserInfo]);
+
+  useEffect(() => {
+    const handleShortcut = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      if (event.key === "Escape" && searchQuery) setSearchQuery("");
+    };
+
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, [searchQuery]);
+
+  const tags = useMemo(
+    () => [...new Set(allNotes.flatMap((note) => note.tags || []))].sort(),
+    [allNotes],
+  );
+
+  const visibleNotes = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    const filtered = allNotes.filter((note) => {
+      const matchesSearch =
+        !query ||
+        [note.title, note.content, ...(note.tags || [])]
+          .join(" ")
+          .toLowerCase()
+          .includes(query);
+      const matchesFilter =
+        activeFilter === "all" ||
+        (activeFilter === "pinned" && note.isPinned) ||
+        (activeFilter === "tag" && (note.tags || []).includes(activeTag));
+      return matchesSearch && matchesFilter;
+    });
+
+    return filtered.sort((first, second) => {
+      if (sortBy === "title") return first.title.localeCompare(second.title);
+      const firstDate = new Date(first.createdOn || 0).getTime();
+      const secondDate = new Date(second.createdOn || 0).getTime();
+      return sortBy === "oldest" ? firstDate - secondDate : secondDate - firstDate;
+    });
+  }, [allNotes, searchQuery, activeFilter, activeTag, sortBy]);
+
+  const openNewNote = () =>
+    setOpenAddEditModal({ isShown: true, type: "add", data: null });
+
+  const handleEdit = (note) =>
+    setOpenAddEditModal({ isShown: true, type: "edit", data: note });
+
+  const deleteNote = async (note) => {
+    try {
+      await axiosInstance.delete(`/notes/delete-note/${note._id}`);
+      setAllNotes((currentNotes) =>
+        currentNotes.filter((currentNote) => currentNote._id !== note._id),
+      );
+      showToastMessage("Note deleted", "delete");
+    } catch (error) {
+      showToastMessage(
+        error.response?.data?.message || "Couldn't delete this note. Please try again.",
+        "error",
+      );
+    }
+  };
+
+  const togglePinned = async (note) => {
+    try {
+      const response = await axiosInstance.put(
+        `/notes/update-note-pinned/${note._id}`,
+        { isPinned: !note.isPinned },
+      );
+      if (response.data?.note) {
+        setAllNotes((currentNotes) =>
+          currentNotes.map((currentNote) =>
+            currentNote._id === note._id ? response.data.note : currentNote,
+          ),
+        );
+        showToastMessage(note.isPinned ? "Note unpinned" : "Note pinned");
+      }
+    } catch (error) {
+      showToastMessage(
+        error.response?.data?.message || "Couldn't update the pin. Please try again.",
+        "error",
+      );
+    }
+  };
+
+  const chooseFilter = (filter) => {
+    setActiveFilter(filter);
+    setActiveTag("");
+  };
+
+  const chooseTag = (tag) => {
+    setActiveFilter("tag");
+    setActiveTag(tag);
+  };
+
+  const heading =
+    activeFilter === "pinned"
+      ? "Pinned notes"
+      : activeFilter === "tag"
+        ? `# ${activeTag}`
+        : "All notes";
 
   return (
-    <>
-  <Navbar
-    userInfo={userInfo}
-    onSearchNote={onSearchNote}
-    handleClearSearch={handleClearSearch}
-  />
-
-  {/* Main Content */}
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-    {allNotes.length > 0 ? (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
-        {allNotes.map((item) => (
-          <NoteCard
-            key={item._id}
-            title={item.title}
-            date={item.createdOn}
-            content={item.content}
-            tags={item.tags}
-            isPinned={item.isPinned}
-            onEdit={() => handleEdit(item)}
-            onDelete={() => deleteNote(item)}
-            onPinNote={() => updateIsPinned(item)}
-          />
-        ))}
-      </div>
-    ) : (
-      <div className="mt-10">
-        <EmptyCard />
-      </div>
-    )}
-  </div>
-
-  {/* Floating Add Button */}
-  <button
-    className="
-      w-14 h-14 sm:w-16 sm:h-16
-      flex items-center justify-center
-      rounded-2xl
-      bg-primary hover:bg-blue-600
-      fixed bottom-5 right-5 sm:bottom-8 sm:right-8
-      shadow-xl
-      transition-all duration-200
-      hover:scale-105
-      z-50
-    "
-    onClick={() =>
-      setOpenAddEditModal({
-        isShown: true,
-        type: "add",
-        data: null,
-      })
-    }
-  >
-    <MdAdd className="text-[28px] sm:text-[32px] text-white" />
-  </button>
-
-  {/* Modal */}
-  <Modal
-    isOpen={openAddEditModal.isShown}
-    onRequestClose={() =>
-      setOpenAddEditModal({
-        isShown: false,
-        type: "add",
-        data: null,
-      })
-    }
-    style={{
-      overlay: {
-        backgroundColor: "rgba(0,0,0,0.45)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "16px",
-        zIndex: 1000,
-      },
-    }}
-    className="
-      w-full
-      max-w-lg
-      max-h-[90vh]
-      overflow-y-auto
-      bg-white
-      rounded-2xl
-      p-4 sm:p-6
-      shadow-2xl
-      outline-none
-    "
-  >
-    <AddEditNotes
-      type={openAddEditModal.type}
-      noteData={openAddEditModal.data}
-      onClose={() =>
-        setOpenAddEditModal({
-          isShown: false,
-          type: "add",
-          data: null,
-        })
-      }
-      getAllNotes={getAllNotes}
-      showToastMessage={showToastMessage}
-    />
-  </Modal>
-
-  {/* Toast */}
-  <Toast
-    isShown={showToastMsg.isShown}
-    message={showToastMsg.message}
-    type={showToastMsg.type}
-    onClose={handleCloseToast}
-  />
-</>
-  );
-};
-
-export default Home;
-
-
-/* 
-<>
+    <div className="app-shell">
       <Navbar
         userInfo={userInfo}
-        onSearchNote={onSearchNote}
-        handleClearSearch={handleClearSearch}
+        searchQuery={searchQuery}
+        searchInputRef={searchInputRef}
+        onSearchNote={setSearchQuery}
+        handleClearSearch={() => setSearchQuery("")}
       />
 
-      <div className="container mx-auto px-6">
-        {allNotes.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
-            {allNotes.map((item) => (
-              <NoteCard
-                key={item._id}
-                title={item.title}
-                date={item.createdOn}
-                content={item.content}
-                tags={item.tags}
-                isPinned={item.isPinned}
-                onEdit={() => handleEdit(item)}
-                onDelete={() => deleteNote(item)}
-                onPinNote={() => updateIsPinned(item)}
-              />
-            ))}
+      <div className="workspace">
+        <aside className="sidebar">
+          <button className="create-note-button" onClick={openNewNote}>
+            <MdAdd size={21} />
+            <span>Create a note</span>
+            <span className="create-shortcut">+</span>
+          </button>
+
+          <div className="sidebar-section">
+            <p className="sidebar-label">YOUR SPACE</p>
+            <button
+              className={`sidebar-link ${activeFilter === "all" ? "active" : ""}`}
+              onClick={() => chooseFilter("all")}
+            >
+              <MdGridView />
+              <span>All notes</span>
+              <span className="sidebar-count">{allNotes.length}</span>
+            </button>
+            <button
+              className={`sidebar-link ${activeFilter === "pinned" ? "active" : ""}`}
+              onClick={() => chooseFilter("pinned")}
+            >
+              <MdOutlinePushPin />
+              <span>Pinned</span>
+              <span className="sidebar-count">
+                {allNotes.filter((note) => note.isPinned).length}
+              </span>
+            </button>
           </div>
-        ) : (
-          <EmptyCard />
-        )}
+
+          <div className="sidebar-section tag-section">
+            <div className="sidebar-label-row">
+              <p className="sidebar-label">YOUR TAGS</p>
+              <MdLabelOutline />
+            </div>
+            {tags.length ? (
+              tags.map((tag) => (
+                <button
+                  key={tag}
+                  className={`sidebar-link tag-link ${
+                    activeFilter === "tag" && activeTag === tag ? "active" : ""
+                  }`}
+                  onClick={() => chooseTag(tag)}
+                >
+                  <span className="tag-dot" />
+                  <span className="tag-name">{tag}</span>
+                  {activeFilter === "tag" && activeTag === tag && <MdCheck />}
+                </button>
+              ))
+            ) : (
+              <p className="sidebar-hint">Tags you add will show up here.</p>
+            )}
+          </div>
+
+          <div className="sidebar-tip">
+            <div className="tip-icon"><MdAutoAwesome /></div>
+            <p className="tip-title">A little note goes a long way.</p>
+            <p className="tip-copy">Capture a thought before it slips away.</p>
+            <button onClick={openNewNote}>Write one now <span>↗</span></button>
+          </div>
+          <p className="sidebar-footer">A calmer place for your thoughts.</p>
+        </aside>
+
+        <main className="notes-main">
+          <div className="page-intro">
+            <div>
+              <p className="eyebrow">YOUR PERSONAL SPACE</p>
+              <h1>Good ideas live here<span>.</span></h1>
+              <p className="page-subtitle">A little space to think, plan, and remember.</p>
+            </div>
+            <div className="notes-total">
+              <span>{allNotes.length.toString().padStart(2, "0")}</span>
+              <span>notes saved</span>
+            </div>
+          </div>
+
+          <section className="notes-section">
+            <div className="notes-heading-row">
+              <div>
+                <h2>{heading}</h2>
+                <p>
+                  {searchQuery
+                    ? `${visibleNotes.length} result${visibleNotes.length === 1 ? "" : "s"} for “${searchQuery}”`
+                    : `${visibleNotes.length} note${visibleNotes.length === 1 ? "" : "s"} to explore`}
+                </p>
+              </div>
+              <div className="notes-controls">
+                <label className="sort-control">
+                  <MdSort />
+                  <select
+                    aria-label="Sort notes"
+                    value={sortBy}
+                    onChange={(event) => setSortBy(event.target.value)}
+                  >
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                    <option value="title">Title A–Z</option>
+                  </select>
+                </label>
+                <div className="view-toggle" aria-label="Note layout">
+                  <button
+                    aria-label="Grid view"
+                    title="Grid view"
+                    aria-pressed={viewMode === "grid"}
+                    className={viewMode === "grid" ? "selected" : ""}
+                    onClick={() => setViewMode("grid")}
+                  >
+                    <MdGridView />
+                  </button>
+                  <button
+                    aria-label="List view"
+                    title="List view"
+                    aria-pressed={viewMode === "list"}
+                    className={viewMode === "list" ? "selected" : ""}
+                    onClick={() => setViewMode("list")}
+                  >
+                    <MdViewAgenda />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {loadError ? (
+              <div className="notes-message error-message">
+                <p>{loadError}</p>
+                <button onClick={getAllNotes}>Try again</button>
+              </div>
+            ) : isLoading ? (
+              <div className="notes-grid">
+                {[1, 2, 3].map((item) => <div className="note-skeleton" key={item} />)}
+              </div>
+            ) : visibleNotes.length ? (
+              <div className={`notes-grid ${viewMode === "list" ? "list-view" : ""}`}>
+                {visibleNotes.map((note) => (
+                  <NoteCard
+                    key={note._id}
+                    note={note}
+                    onEdit={() => handleEdit(note)}
+                    onDelete={() => deleteNote(note)}
+                    onPinNote={() => togglePinned(note)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="notes-message empty-message">
+                <div className="empty-art"><MdAutoAwesome /></div>
+                <h3>{searchQuery ? "No notes found" : "Your page is still blank"}</h3>
+                <p>
+                  {searchQuery
+                    ? "Try another search or clear the search field."
+                    : "Start with a thought, a reminder, or something you don't want to forget."}
+                </p>
+                {searchQuery ? (
+                  <button onClick={() => setSearchQuery("")}>Clear search</button>
+                ) : (
+                  <button onClick={openNewNote}><MdAdd /> Create your first note</button>
+                )}
+              </div>
+            )}
+          </section>
+          <footer className="workspace-footer">Made for the thoughts worth keeping <span>✳</span></footer>
+        </main>
       </div>
 
-      <button
-        className="w-16 h-16 flex items-center justify-center rounded-2xl bg-primary hover:bg-blue-600 fixed right-10 bottom-10 shadow-lg"
-        onClick={() =>
-          setOpenAddEditModal({ isShown: true, type: "add", data: null })
-        }
-      >
-        <MdAdd className="text-[32px] text-white" />
+      <button className="mobile-create-button" aria-label="Create a note" onClick={openNewNote}>
+        <MdAdd />
       </button>
 
       <Modal
         isOpen={openAddEditModal.isShown}
-  onRequestClose={() =>
-    setOpenAddEditModal({ isShown: false, type: "add", data: null })
-  }
-  style={{
-    overlay: {
-      backgroundColor: "rgba(0,0,0,0.4)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-  }}
-  className="w-[90%] md:w-[500px] max-h-[80vh] bg-white rounded-2xl p-6 shadow-2xl outline-none"
+        onRequestClose={closeEditor}
+        className="note-modal"
+        overlayClassName="note-modal-overlay"
+        contentLabel={openAddEditModal.type === "edit" ? "Edit note" : "Create a note"}
       >
         <AddEditNotes
           type={openAddEditModal.type}
           noteData={openAddEditModal.data}
-          onClose={() =>
-            setOpenAddEditModal({ isShown: false, type: "add", data: null })
-          }
+          onClose={closeEditor}
           getAllNotes={getAllNotes}
           showToastMessage={showToastMessage}
         />
       </Modal>
 
-      {/* FIXED PROP NAME HERE *//*}
       <Toast
-        isShown={showToastMsg.isShown}
-        message={showToastMsg.message}
-        type={showToastMsg.type}
-        onClose={handleCloseToast}
+        isShown={toast.isShown}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast((current) => ({ ...current, isShown: false }))}
       />
-    </> */
+    </div>
+  );
+};
+
+export default Home;

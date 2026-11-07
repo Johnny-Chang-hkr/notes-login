@@ -62,22 +62,14 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="w-full flex justify-center pt-6">
-        <div
-          className="flex items-center gap-3 cursor-pointer group"
-        >
-          <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-blue-600 text-white font-bold text-xl shadow-md transition-transform group-hover:scale-105">
-            N
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight hidden sm:block">
-            Notes<span className="text-blue-600">App</span>
-          </h2>
-        </div>
+    <div className="auth-page min-h-screen">
+      <div className="auth-brand">
+        <span className="brand-mark">n.</span>
+        <span className="brand-name">notely<span>.</span></span>
       </div>
 
-      <div className="flex items-center justify-center mt-20 px-4">
-        <div className="w-full max-w-md border rounded-2xl bg-white px-8 py-10 shadow-sm">
+      <div className="auth-content flex items-center justify-center px-4">
+        <div className="auth-card w-full max-w-md border rounded-2xl bg-white px-8 py-10 shadow-sm">
           <form onSubmit={handleSignUp}>
             <h4 className="text-3xl font-semibold mb-2 text-slate-800">Create Account</h4>
             <p className="text-sm text-slate-500 mb-8">Join us to start organizing your thoughts.</p>
@@ -101,7 +93,7 @@ const SignUp = () => {
                   Email Address
                 </label>
                 <input
-                  type="text"
+                  type="email"
                   placeholder="john@example.com"
                   className="input-box mt-1 w-full"
                   value={email}

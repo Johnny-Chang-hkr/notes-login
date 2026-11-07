@@ -1,131 +1,127 @@
 import { useState } from "react";
+import { MdAutoAwesome, MdClose, MdOutlineNotes } from "react-icons/md";
 import TagInput from "../../components/Input/TagInput";
-import { MdClose } from "react-icons/md";
 import axiosInstance from "../../utils/axiosInstance";
+
+const noteColors = [
+  { value: "#ffffff", label: "Paper white" },
+  { value: "#fff2d8", label: "Warm sand" },
+  { value: "#fce8e6", label: "Soft rose" },
+  { value: "#e9f4e8", label: "Sage green" },
+  { value: "#e8efff", label: "Periwinkle" },
+  { value: "#f3eaff", label: "Lavender" },
+];
 
 const AddEditNotes = ({ onClose, noteData, type, getAllNotes, showToastMessage }) => {
   const [title, setTitle] = useState(noteData?.title || "");
   const [content, setContent] = useState(noteData?.content || "");
   const [tags, setTags] = useState(noteData?.tags || []);
+  const [color, setColor] = useState(noteData?.color || noteColors[0].value);
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [error, setError] = useState(null);
-
-  // Add Note
-  const addNewNote = async () => {
-    try {
-      const response = await axiosInstance.post("/notes/add-note", {
-        title,
-        content,
-        tags,
-      });
-
-      if (response.data && response.data.note) {
-        showToastMessage("Note Added Successfully");
-        getAllNotes();
-        onClose();
-      }
-    } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        setError(error.response.data.message);
-      }
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!title.trim()) {
+      setError("Give your note a title to save it.");
+      return;
     }
-  };
-
-  // Edit Note
-  const editNote = async () => {
-    const noteId = noteData._id;
-
-    try {
-      const response = await axiosInstance.put("/notes/edit-note/" + noteId, {
-        title,
-        content,
-        tags,
-      });
-
-      if (response.data && response.data.note) {
-        showToastMessage("Note Edited Successfully");
-        getAllNotes();
-        onClose();
-      }
-    } catch (error) {
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        setError(error.response.data.message);
-      }
-    }
-  };
-
-  const handleAddNote = () => {
-    if (!title) {
-      setError("Please enter the title");
+    if (!content.trim()) {
+      setError("Add a little content before saving.");
       return;
     }
 
-    if (!content) {
-      setError("Pelase enter the content");
-      return;
-    }
     setError("");
-
-    if (type === "edit") {
-      editNote();
-    } else {
-      addNewNote();
+    setIsSaving(true);
+    try {
+      const note = { title: title.trim(), content: content.trim(), tags, color };
+      if (type === "edit") {
+        await axiosInstance.put(`/notes/edit-note/${noteData._id}`, note);
+        showToastMessage("Your note has been updated");
+      } else {
+        await axiosInstance.post("/notes/add-note", note);
+        showToastMessage("A new note, safely saved");
+      }
+      await getAllNotes();
+      onClose();
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          "Couldn't save your note. Please try again.",
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
   return (
-    <div className="relative">
-      <button
-        className="w-10 h-10 rounded-full flex items-center justify-center absolute -top-3 -right-3 hover:bg-slate-50"
-        onClick={onClose}
-      >
-        <MdClose className="text-xl text-slate-400" />
-      </button>
-      <div className="flex flex-col gap-2 ">
-        <label className="input-label">TITLE</label>
-        <input
-          type="text"
-          className="text-2xl text-slate-950 outline-none"
-          placeholder="Go To Gym At 5"
-          value={title}
-          onChange={({ target }) => setTitle(target.value)}
-        />
+    <form className="note-editor" onSubmit={handleSubmit}>
+      <div className="editor-header">
+        <div className="editor-heading-icon"><MdOutlineNotes /></div>
+        <div>
+          <p className="editor-eyebrow">{type === "edit" ? "MAKE IT YOURS" : "A FRESH PAGE"}</p>
+          <h2>{type === "edit" ? "Edit your note" : "Create a note"}</h2>
+        </div>
+        <button type="button" className="editor-close" onClick={onClose} aria-label="Close editor">
+          <MdClose />
+        </button>
       </div>
 
-      <div className="flex flex-col gap-2 mt-4">
-        <label className="input-label">CONTENT</label>
-        <textarea
-          type="text"
-          className="text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded"
-          placeholder="Content"
-          rows={10}
-          value={content}
-          onChange={({ target }) => setContent(target.value)}
-        />
+      <label className="editor-label" htmlFor="note-title">TITLE</label>
+      <input
+        id="note-title"
+        autoFocus
+        className="editor-title-input"
+        type="text"
+        placeholder="What’s on your mind?"
+        value={title}
+        maxLength={120}
+        onChange={(event) => setTitle(event.target.value)}
+      />
+
+      <div className="editor-content-label">
+        <label className="editor-label" htmlFor="note-content">YOUR THOUGHTS</label>
+        <span>{content.trim() ? content.trim().split(/\s+/).length : 0} words</span>
+      </div>
+      <textarea
+        id="note-content"
+        className="editor-content-input"
+        placeholder="Start writing... ideas, plans, little reminders, anything."
+        rows={8}
+        value={content}
+        onChange={(event) => setContent(event.target.value)}
+      />
+
+      <div className="editor-label color-label">PICK A COLOR</div>
+      <div className="color-options" role="group" aria-label="Note color">
+        {noteColors.map((noteColor) => (
+          <button
+            key={noteColor.value}
+            type="button"
+            className={`color-option ${color === noteColor.value ? "chosen" : ""}`}
+            style={{ "--swatch-color": noteColor.value }}
+            onClick={() => setColor(noteColor.value)}
+            aria-label={noteColor.label}
+            aria-pressed={color === noteColor.value}
+          />
+        ))}
       </div>
 
-      <div className="mt-3">
-        <label className="input-label">TAGS</label>
-        <TagInput tags={tags} setTags={setTags} />
+      <div className="editor-label tag-label">TAGS</div>
+      <TagInput tags={tags} setTags={setTags} />
+
+      {error && <p className="editor-error">{error}</p>}
+
+      <div className="editor-footer">
+        <p><MdAutoAwesome /> Your thoughts are saved to your space.</p>
+        <div>
+          <button type="button" className="editor-cancel" onClick={onClose}>Cancel</button>
+          <button type="submit" className="editor-save" disabled={isSaving}>
+            {isSaving ? "Saving..." : type === "edit" ? "Save changes" : "Save note"}
+          </button>
+        </div>
       </div>
-
-      {error && <p className="text-red-500 text-xs pt-4">{error}</p>}
-
-      <button
-        className="btn-primary font-medium mt-5 p-3"
-        onClick={handleAddNote}
-      >
-        {type === "edit" ? "UPDATE" : "ADD"}
-      </button>
-    </div>
+    </form>
   );
 };
 
