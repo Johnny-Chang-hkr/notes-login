@@ -6,7 +6,7 @@ const SearchBar = ({ value, onChange, onClearSearch, inputRef }) => (
     <FaMagnifyingGlass className="search-icon" aria-hidden="true" />
     <input
       type="search"
-      placeholder="Search your notes..."
+      placeholder="Search notes..."
       aria-label="Search your notes"
       ref={inputRef}
       value={value}

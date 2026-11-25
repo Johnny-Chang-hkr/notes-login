@@ -54,9 +54,9 @@ const Login = () => {
   return (
     <AuthLayout variant="login">
       <div className="auth-form-heading">
-        <span className="auth-form-eyebrow">YOUR SPACE IS WAITING</span>
+        <span className="auth-form-eyebrow">WELCOME BACK</span>
         <h2>Welcome <span>back.</span></h2>
-        <p>Pick up right where your thoughts left off.</p>
+        <p>Sign in to pick up where you left off.</p>
       </div>
 
       <form className="auth-form" onSubmit={handleLogin} noValidate>
@@ -110,13 +110,13 @@ const Login = () => {
         )}
 
         <button className="auth-submit" type="submit" disabled={isLoading}>
-          <span>{isLoading ? "Finding your space..." : "Sign in"}</span>
+          <span>          {isLoading ? "Signing you in..." : "Sign in"}</span>
           {isLoading ? <span className="auth-spinner" /> : <MdArrowForward />}
         </button>
       </form>
 
       <p className="auth-switch">
-        New to Notely? <Link to="/signup">Create your free account <MdArrowForward /></Link>
+        New to Notely? <Link to="/signup">Create an account <MdArrowForward /></Link>
       </p>
     </AuthLayout>
   );

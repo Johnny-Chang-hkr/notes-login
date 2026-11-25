@@ -5,7 +5,7 @@ import {
   MdCheck,
   MdGridView,
   MdLabelOutline,
-  MdLocalFlorist,
+  MdOutlineNotes,
   MdOutlinePushPin,
   MdSort,
   MdViewAgenda,
@@ -271,20 +271,20 @@ const Home = () => {
           </div>
 
           <div className="sidebar-tip">
-            <div className="tip-icon"><MdLocalFlorist /></div>
-            <p className="tip-title">Let your ideas grow.</p>
-            <p className="tip-copy">Plant a little thought and come back to it anytime.</p>
-            <button onClick={openNewNote}>Plant a thought <span>↗</span></button>
+            <div className="tip-icon"><MdOutlineNotes /></div>
+            <p className="tip-title">Make a note of it.</p>
+            <p className="tip-copy">Keep a thought close by writing it down.</p>
+            <button onClick={openNewNote}>Write a note <span>↗</span></button>
           </div>
-          <p className="sidebar-footer">A calmer place for your thoughts.</p>
+          <p className="sidebar-footer">A clear space for your thoughts.</p>
         </aside>
 
         <main className="notes-main">
           <div className="page-intro">
             <div>
-              <p className="eyebrow"><MdLocalFlorist /> YOUR LITTLE MEADOW</p>
-              <h1>Let your thoughts <span>bloom.</span></h1>
-              <p className="page-subtitle">A little space for ideas to take root and grow.</p>
+              <p className="eyebrow"><MdOutlineNotes /> YOUR WORKSPACE</p>
+              <h1>Your notes, <span>in one place.</span></h1>
+              <p className="page-subtitle">A focused space for the things you want to remember.</p>
             </div>
             <div className="notes-total">
               <span>{allNotes.length.toString().padStart(2, "0")}</span>
@@ -375,7 +375,7 @@ const Home = () => {
               </div>
             )}
           </section>
-          <footer className="workspace-footer">Made for the thoughts worth keeping <span>✳</span></footer>
+          <footer className="workspace-footer">A little more room for what matters.</footer>
         </main>
       </div>
 

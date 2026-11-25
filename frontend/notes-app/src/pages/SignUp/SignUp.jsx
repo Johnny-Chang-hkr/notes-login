@@ -88,9 +88,9 @@ const SignUp = () => {
   return (
     <AuthLayout variant="signup">
       <div className="auth-form-heading">
-        <span className="auth-form-eyebrow">A FRESH PAGE, JUST FOR YOU</span>
-        <h2>Your ideas need <span>a home.</span></h2>
-        <p>Make a little room for everything on your mind.</p>
+        <span className="auth-form-eyebrow">GET STARTED</span>
+        <h2>A space for <span>your ideas.</span></h2>
+        <p>Create an account and keep your notes together.</p>
       </div>
 
       <form className="auth-form auth-form--signup" onSubmit={handleSignUp} noValidate>
@@ -103,7 +103,7 @@ const SignUp = () => {
               name="name"
               type="text"
               autoComplete="name"
-              placeholder="What do your friends call you?"
+              placeholder="Your name"
               value={name}
               onChange={(event) => {
                 setName(event.target.value);
@@ -144,7 +144,7 @@ const SignUp = () => {
             id="signup-password"
             name="new-password"
             autoComplete="new-password"
-            placeholder="Make it yours"
+            placeholder="Create a password"
             value={password}
             onChange={(event) => {
               setPassword(event.target.value);
@@ -165,7 +165,7 @@ const SignUp = () => {
             </div>
             <span>{passwordStrength.label}</span>
           </div>
-          <p className="password-hint">A longer password with a mix of characters is easier to keep safe.</p>
+          <p className="password-hint">Use a mix of characters and make it hard to guess.</p>
         </div>
 
         {error && (
@@ -176,14 +176,14 @@ const SignUp = () => {
         )}
 
         <button className="auth-submit" type="submit" disabled={isLoading}>
-          <span>{isLoading ? "Making your space..." : "Create my account"}</span>
+          <span>          {isLoading ? "Creating your account..." : "Create account"}</span>
           {isLoading ? <span className="auth-spinner" /> : <MdArrowForward />}
         </button>
-        <p className="auth-consent">By joining, you get a little more room for your ideas.</p>
+        <p className="auth-consent">Your notes stay private to your account.</p>
       </form>
 
       <p className="auth-switch">
-        Already have a space? <Link to="/login">Sign in instead <MdArrowForward /></Link>
+        Already have an account? <Link to="/login">Sign in <MdArrowForward /></Link>
       </p>
     </AuthLayout>
   );

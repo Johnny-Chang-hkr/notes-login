@@ -4,12 +4,12 @@ import TagInput from "../../components/Input/TagInput";
 import axiosInstance from "../../utils/axiosInstance";
 
 const noteColors = [
-  { value: "#ffffff", label: "Paper white" },
-  { value: "#fff2d8", label: "Warm sand" },
-  { value: "#fce8e6", label: "Soft rose" },
-  { value: "#e9f4e8", label: "Sage green" },
-  { value: "#e8efff", label: "Periwinkle" },
-  { value: "#f3eaff", label: "Lavender" },
+  { value: "#fffefa", label: "Warm white" },
+  { value: "#f3f0e8", label: "Sand" },
+  { value: "#f3ebea", label: "Rose" },
+  { value: "#edf0eb", label: "Sage" },
+  { value: "#edf0f2", label: "Slate" },
+  { value: "#f0edf2", label: "Lilac" },
 ];
 
 const AddEditNotes = ({ onClose, noteData, type, getAllNotes, showToastMessage }) => {
@@ -59,7 +59,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes, showToastMessage }
       <div className="editor-header">
         <div className="editor-heading-icon"><MdOutlineNotes /></div>
         <div>
-          <p className="editor-eyebrow">{type === "edit" ? "MAKE IT YOURS" : "A FRESH PAGE"}</p>
+          <p className="editor-eyebrow">{type === "edit" ? "EDIT NOTE" : "NEW NOTE"}</p>
           <h2>{type === "edit" ? "Edit your note" : "Create a note"}</h2>
         </div>
         <button type="button" className="editor-close" onClick={onClose} aria-label="Close editor">
@@ -73,26 +73,26 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes, showToastMessage }
         autoFocus
         className="editor-title-input"
         type="text"
-        placeholder="What’s on your mind?"
+        placeholder="Give this note a title"
         value={title}
         maxLength={120}
         onChange={(event) => setTitle(event.target.value)}
       />
 
       <div className="editor-content-label">
-        <label className="editor-label" htmlFor="note-content">YOUR THOUGHTS</label>
+        <label className="editor-label" htmlFor="note-content">CONTENT</label>
         <span>{content.trim() ? content.trim().split(/\s+/).length : 0} words</span>
       </div>
       <textarea
         id="note-content"
         className="editor-content-input"
-        placeholder="Start writing... ideas, plans, little reminders, anything."
+        placeholder="Write something you want to remember..."
         rows={8}
         value={content}
         onChange={(event) => setContent(event.target.value)}
       />
 
-      <div className="editor-label color-label">PICK A COLOR</div>
+      <div className="editor-label color-label">NOTE COLOR</div>
       <div className="color-options" role="group" aria-label="Note color">
         {noteColors.map((noteColor) => (
           <button
@@ -113,7 +113,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes, showToastMessage }
       {error && <p className="editor-error">{error}</p>}
 
       <div className="editor-footer">
-        <p><MdAutoAwesome /> Your thoughts are saved to your space.</p>
+        <p><MdAutoAwesome /> Your notes are saved to your account.</p>
         <div>
           <button type="button" className="editor-cancel" onClick={onClose}>Cancel</button>
           <button type="submit" className="editor-save" disabled={isSaving}>
